@@ -49,15 +49,10 @@ fn sum_part_2(input: &str) -> u64 {
 
     let mut sum = 0;
 
-    for x in left_list.iter() {
-        let mut count = 0;
-        for y in right_list.iter() {
-            if x == y {
-                count += 1;
-            }
-        }
+    left_list.iter().for_each(|x| {
+        let count = right_list.iter().filter(|y| *y == x).count();
         sum += *x * count as u64;
-    }
+    });
 
     sum
 }
