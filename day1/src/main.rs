@@ -2,16 +2,15 @@ fn distance_part_1(input: &str) -> u64 {
     let mut left_list: Vec<u64> = vec![];
     let mut right_list: Vec<u64> = vec![];
 
-    for line in input.lines() {
-        let split = line.split_whitespace();
-        for (idx, s) in split.enumerate() {
+    input.lines().for_each(|line| {
+        for (idx, c) in line.split_whitespace().enumerate() {
             if idx == 0 {
-                left_list.push(s.parse::<u64>().unwrap());
+                left_list.push(c.parse::<u64>().unwrap());
             } else if idx == 1 {
-                right_list.push(s.parse::<u64>().unwrap());
+                right_list.push(c.parse::<u64>().unwrap());
             }
         }
-    }
+    });
 
     // Sort vectors
     left_list.sort();
@@ -36,16 +35,16 @@ fn sum_part_2(input: &str) -> u64 {
     let mut left_list: Vec<u64> = vec![];
     let mut right_list: Vec<u64> = vec![];
 
-    for line in input.lines() {
-        let split = line.split_whitespace();
-        for (idx, s) in split.enumerate() {
+    input.lines().for_each(|line| {
+        for (idx, c) in line.split_whitespace().enumerate() {
             if idx == 0 {
-                left_list.push(s.parse::<u64>().unwrap());
+                left_list.push(c.parse::<u64>().unwrap());
             } else if idx == 1 {
-                right_list.push(s.parse::<u64>().unwrap());
+                right_list.push(c.parse::<u64>().unwrap());
             }
         }
-    }
+    });
+
     assert_eq!(left_list.len(), right_list.len());
 
     let mut sum = 0;
