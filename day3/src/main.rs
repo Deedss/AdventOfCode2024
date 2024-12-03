@@ -29,38 +29,28 @@ fn sanitize_input(input: &str) -> String {
 
     let mut chars = input.chars().peekable();
     while let Some(c) = chars.next() {
-        // Check for the start of a `don't()` block
         if chars.clone().take(6).collect::<String>() == "don't(" {
             inside_invalid_section = true;
-            // Skip "don't("
             for _ in 0..6 {
                 chars.next();
             }
             continue;
         }
 
-        // Check for the end of an invalid section with `do()`
         if inside_invalid_section && chars.clone().take(3).collect::<String>() == "do(" {
             inside_invalid_section = false;
-            // Skip "do()"
             for _ in 0..3 {
                 chars.next();
             }
             continue;
         }
 
-        // Add valid characters to the sanitized result
         if !inside_invalid_section {
             sanitized.push(c);
         }
     }
 
     sanitized
-}
-
-fn is_valid_mul(input: &str) -> bool {
-    let re = Regex::new(r"mul\([0-9]{1,3},[0-9]{1,3}\)").unwrap();
-    re.is_match(input)
 }
 
 fn part_1(input: &str) -> u64 {
