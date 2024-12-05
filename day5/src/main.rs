@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, vec};
 
 fn get_page_ordering_rules(input: &str) -> HashMap<u8, Vec<u8>> {
     let page_rules: Vec<(u8, u8)> = input
@@ -38,22 +38,17 @@ fn get_page_updates(input: &str) -> Vec<Vec<u8>> {
 }
 
 fn is_page_update_valid(rules: &HashMap<u8, Vec<u8>>, page_update: &Vec<u8>) -> (bool, u8) {
-    let mut valid = false;
+    let mut valid = true;
 
     for (page_idx, page) in page_update.iter().enumerate() {
-        let rule = rules.get(&page);
-        if rule.is_some() {
-            for p in rule.unwrap().iter() {
-                if page_update
-                    .iter()
-                    .position(|&x| x == *p)
-                    .is_none_or(|idx| idx > page_idx)
-                {
-                    valid = true;
-                } else {
-                    valid = false;
-                }
-            }
+        let values = rules.get(page);
+        if values.is_some()
+            && page_update[0..page_idx]
+                .iter()
+                .any(|i| values.unwrap().contains(i))
+        {
+            valid = false;
+            break;
         }
     }
 
@@ -65,15 +60,16 @@ fn is_page_update_valid(rules: &HashMap<u8, Vec<u8>>, page_update: &Vec<u8>) -> 
 fn part_1(input: &str) -> u64 {
     let page_ordering_rules = get_page_ordering_rules(input);
     let page_updates = get_page_updates(input);
-    let mut sum = 0;
+    let mut sum = 0 as u64;
     for page in page_updates.iter() {
         let result = is_page_update_valid(&page_ordering_rules, page);
+        println!("{:?}", result);
         if result.0 {
-            sum += result.1;
+            sum += result.1 as u64;
         }
     }
 
-    sum as u64
+    sum
 }
 
 fn part_2(input: &str) -> u64 {
@@ -91,8 +87,7 @@ mod tests {
     #[test]
     fn test_part_1_example() {
         let input = include_str!("example.txt");
-        println!("Sum {}", part_1(input));
-        // assert_eq!(part_1(input), 143);
+        assert_eq!(part_1(input), 143);
     }
 
     #[test]
