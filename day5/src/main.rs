@@ -1,4 +1,4 @@
-use std::{collections::HashMap, vec};
+use std::collections::HashMap;
 
 fn get_page_ordering_rules(input: &str) -> HashMap<u8, Vec<u8>> {
     let page_rules: Vec<(u8, u8)> = input
@@ -37,7 +37,7 @@ fn get_page_updates(input: &str) -> Vec<Vec<u8>> {
         .collect()
 }
 
-fn is_page_update_valid(rules: &HashMap<u8, Vec<u8>>, page_update: &Vec<u8>) -> (bool, u8) {
+fn is_page_update_valid(rules: &HashMap<u8, Vec<u8>>, page_update: &Vec<u8>) -> bool {
     let mut valid = true;
 
     for (page_idx, page) in page_update.iter().enumerate() {
@@ -52,9 +52,20 @@ fn is_page_update_valid(rules: &HashMap<u8, Vec<u8>>, page_update: &Vec<u8>) -> 
         }
     }
 
-    let middle_value = page_update.get(page_update.len() / 2).unwrap().clone();
+    valid
+}
 
-    (valid, middle_value)
+fn sort_pages(rules: &HashMap<u8, Vec<u8>>, pages: &Vec<u8>) -> Vec<u8> {
+    let mut sorted_pages = pages.clone();
+    sorted_pages.sort_by(|a, b| {
+        if rules.get(a).is_some_and(|x| x.contains(b)) {
+            std::cmp::Ordering::Less
+        } else {
+            std::cmp::Ordering::Greater
+        }
+    });
+
+    sorted_pages
 }
 
 fn part_1(input: &str) -> u64 {
@@ -63,9 +74,8 @@ fn part_1(input: &str) -> u64 {
     let mut sum = 0 as u64;
     for page in page_updates.iter() {
         let result = is_page_update_valid(&page_ordering_rules, page);
-        println!("{:?}", result);
-        if result.0 {
-            sum += result.1 as u64;
+        if result {
+            sum += page[page.len() / 2] as u64;
         }
     }
 
@@ -73,7 +83,25 @@ fn part_1(input: &str) -> u64 {
 }
 
 fn part_2(input: &str) -> u64 {
+    let page_ordering_rules = get_page_ordering_rules(input);
+    let mut invalid_page_updates = vec![];
+    let page_updates = get_page_updates(input);
     let mut sum = 0;
+
+    for page in page_updates.iter() {
+        let result = is_page_update_valid(&page_ordering_rules, page);
+        if !result {
+            invalid_page_updates.push(page.clone());
+        }
+    }
+
+    for page in invalid_page_updates.iter() {
+        // fix the values
+        let sorted = sort_pages(&page_ordering_rules, page);
+
+        // Get middle value from fixed page
+        sum += sorted[sorted.len() / 2] as u64;
+    }
 
     sum
 }
@@ -96,15 +124,16 @@ mod tests {
         println!("Sum {}", part_1(input));
     }
 
-    // #[test]
-    // fn test_part_2_example() {
-    //     let input = include_str!("example.txt");
-    //     assert_eq!(part_2(input), 9);
-    // }
+    #[test]
+    fn test_part_2_example() {
+        let input = include_str!("example.txt");
+        println!("Sum {}", part_2(input));
+        // assert_eq!(part_2(input), 123);
+    }
 
-    // #[test]
-    // fn test_part_2() {
-    //     let input = include_str!("input.txt");
-    //     println!("Sum {}", part_2(input));
-    // }
+    #[test]
+    fn test_part_2() {
+        let input = include_str!("input.txt");
+        println!("Sum {}", part_2(input));
+    }
 }
