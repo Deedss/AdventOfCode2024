@@ -33,6 +33,34 @@ impl Location {
             },
         }
     }
+
+    fn move_up(&self) -> Option<Self> {
+        self.r.checked_sub(1).map(|new_r| Self {
+            r: new_r,
+            c: self.c,
+        })
+    }
+
+    fn move_down(&self) -> Option<Self> {
+        self.r.checked_add(1).map(|new_r| Self {
+            r: new_r,
+            c: self.c,
+        })
+    }
+
+    fn move_right(&self) -> Option<Self> {
+        self.c.checked_add(1).map(|new_c| Self {
+            r: self.r,
+            c: new_c,
+        })
+    }
+
+    fn move_left(&self) -> Option<Self> {
+        self.c.checked_sub(1).map(|new_c| Self {
+            r: self.r,
+            c: new_c,
+        })
+    }
 }
 
 fn make_grid(input: &str) -> Vec<Vec<char>> {
@@ -40,7 +68,7 @@ fn make_grid(input: &str) -> Vec<Vec<char>> {
 }
 
 fn location_is_inside_grid(grid: &Vec<Vec<char>>, loc: Location) -> bool {
-    loc.r >= 0 && loc.r < grid.len() && loc.c >= 0 && loc.c < grid[0].len()
+    loc.r < grid.len() && loc.c < grid[0].len()
 }
 
 fn is_obstruction(grid: &Vec<Vec<char>>, loc: Location) -> bool {
@@ -54,12 +82,10 @@ fn get_next_direction(
 ) -> Option<Direction> {
     match current_direction {
         Direction::Up => {
-            let new_loc = Location {
-                r: current_location.r - 1,
-                c: current_location.c,
-            };
-            if location_is_inside_grid(grid, new_loc) {
-                if is_obstruction(grid, new_loc) {
+            if current_location.move_up().is_some()
+                && location_is_inside_grid(grid, current_location.move_up().unwrap())
+            {
+                if is_obstruction(grid, current_location.move_up().unwrap()) {
                     return Some(Direction::Right);
                 } else {
                     return Some(Direction::Up);
@@ -67,12 +93,10 @@ fn get_next_direction(
             }
         }
         Direction::Down => {
-            let new_loc = Location {
-                r: current_location.r + 1,
-                c: current_location.c,
-            };
-            if location_is_inside_grid(grid, new_loc) {
-                if is_obstruction(grid, new_loc) {
+            if current_location.move_down().is_some()
+                && location_is_inside_grid(grid, current_location.move_down().unwrap())
+            {
+                if is_obstruction(grid, current_location.move_down().unwrap()) {
                     return Some(Direction::Left);
                 } else {
                     return Some(Direction::Down);
@@ -80,12 +104,10 @@ fn get_next_direction(
             }
         }
         Direction::Left => {
-            let new_loc = Location {
-                r: current_location.r,
-                c: current_location.c - 1,
-            };
-            if location_is_inside_grid(grid, new_loc) {
-                if is_obstruction(grid, new_loc) {
+            if current_location.move_left().is_some()
+                && location_is_inside_grid(grid, current_location.move_left().unwrap())
+            {
+                if is_obstruction(grid, current_location.move_left().unwrap()) {
                     return Some(Direction::Up);
                 } else {
                     return Some(Direction::Left);
@@ -93,12 +115,10 @@ fn get_next_direction(
             }
         }
         Direction::Right => {
-            let new_loc = Location {
-                r: current_location.r,
-                c: current_location.c + 1,
-            };
-            if location_is_inside_grid(grid, new_loc) {
-                if is_obstruction(grid, new_loc) {
+            if current_location.move_right().is_some()
+                && location_is_inside_grid(grid, current_location.move_right().unwrap())
+            {
+                if is_obstruction(grid, current_location.move_right().unwrap()) {
                     return Some(Direction::Down);
                 } else {
                     return Some(Direction::Right);
@@ -123,20 +143,26 @@ fn get_start_location(grid: &Vec<Vec<char>>) -> Location {
 }
 
 fn part_1(input: &str) -> u64 {
-    let grid = make_grid(input);
+    let mut grid = make_grid(input);
     let mut current_location = get_start_location(&grid);
     let mut current_direction = Some(Direction::Up);
     let mut sum = 0;
 
     loop {
+        grid[current_location.r][current_location.c] = 'X';
         current_direction = get_next_direction(current_direction.unwrap(), current_location, &grid);
         if current_direction.is_none() {
             break;
         }
-
-        println!("Location: {:?}", current_location);
         current_location = current_location.next_location(current_direction.unwrap());
-        sum += 1;
+    }
+
+    for r in grid.iter() {
+        for c in r.iter() {
+            if *c == 'X' {
+                sum += 1;
+            }
+        }
     }
 
     sum
@@ -157,8 +183,7 @@ mod tests {
     #[test]
     fn test_part_1_example() {
         let input = include_str!("example.txt");
-        println!("Sum {}", part_1(input));
-        // assert_eq!(part_1(input), 41);
+        assert_eq!(part_1(input), 41);
     }
 
     #[test]
